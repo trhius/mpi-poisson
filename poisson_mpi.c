@@ -19,6 +19,9 @@ int *proc;			/* process indexed by vertex */
 int *i_min, *i_max;		/* min, max vertex indices of processes */
 int *left_proc, *right_proc;	/* processes to left and right */
 
+double comm_time, non_comm_time;
+double comm_start, comm_end;
+
 /*
   Functions:
 */
@@ -78,6 +81,7 @@ int main ( int argc, char *argv[] )
   int step;
   double *swap;
   double wall_time;
+  comm_time = 0.0;
 /*
   MPI initialization.
 */
@@ -205,6 +209,8 @@ int main ( int argc, char *argv[] )
   {
     printf ( "\n" );
     printf ( "  Wall clock time = %f secs\n", wall_time );
+    printf("  Communication time = %f secs\n", comm_time);
+    printf("  Non-communication time = %f secs\n", wall_time - comm_time);
   }
 /*
   Terminate MPI.
@@ -293,6 +299,9 @@ void jacobi ( int num_procs, double f[] )
   H is the lattice spacing.
 */
   h = L / ( double ) ( N + 1 );
+
+  comm_start = MPI_Wtime();
+
 /* 
   Update ghost layers using non-blocking send/receive 
 */
@@ -336,6 +345,10 @@ void jacobi ( int num_procs, double f[] )
   Wait for all non-blocking communications to complete.
 */
   MPI_Waitall ( requests, request, status );
+
+  comm_end = MPI_Wtime();
+  comm_time += comm_end - comm_start;
+
 /* 
   Jacobi update for boundary vertices in my domain.
 */
