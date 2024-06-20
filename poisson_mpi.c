@@ -208,9 +208,8 @@ int main ( int argc, char *argv[] )
   if ( my_rank == 0 )
   {
     printf ( "\n" );
-    printf ( "  Wall clock time = %f secs\n", wall_time );
-    printf("  Communication time = %f secs\n", comm_time);
-    printf("  Non-communication time = %f secs\n", wall_time - comm_time);
+    printf("  T_w_com: %f secs\n", comm_time);
+    printf("  T_wo_com: %f secs\n", wall_time - comm_time);
   }
 /*
   Terminate MPI.
