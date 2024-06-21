@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
   wall_time = MPI_Wtime() - wall_time;
   if (my_rank == 0) {
     printf("\n");
-    printf("  T_w_com: %f secs\n", comm_time);
+    printf("  T_w_com : %f secs\n", wall_time);
     printf("  T_wo_com: %f secs\n", wall_time - comm_time);
   }
 
@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-// phân bố bộ nhứo cho mảng u và u_new, khởi tạo chúng vs giá trị 0
+// phân bố bộ nhớ cho mảng u và u_new, khởi tạo chúng vs giá trị 0
 void allocate_arrays() {
   int i;
   int ndof = (N + 2) * (N + 2);
@@ -258,37 +258,26 @@ void make_domains(int num_procs) {
   double eps = 0.0001;;
   int i, p;
   double x_max, x_min;
-  /*
-    Allocate arrays for process information.
-  */
+
   proc = (int *)malloc((N + 2) * sizeof(int));
   i_min = (int *)malloc(num_procs * sizeof(int));
   i_max = (int *)malloc(num_procs * sizeof(int));
   left_proc = (int *)malloc(num_procs * sizeof(int));
   right_proc = (int *)malloc(num_procs * sizeof(int));
-  /*
-    Divide the range [(1-eps)..(N+eps)] evenly among the processes.
-  */
+
   d = (N - 1.0 + 2.0 * eps) / (double)num_procs;
 
   for (p = 0; p < num_procs; p++) {
-    /*
-      The I indices assigned to domain P will satisfy X_MIN <= I <= X_MAX.
-    */
     x_min = -eps + 1.0 + (double)(p * d);
     x_max = x_min + d;
-    /*
-      For the node with index I, store in PROC[I] the process P it belongs to.
-    */
+
     for (i = 1; i <= N; i++) {
       if (x_min <= i && i < x_max) {
         proc[i] = p;
       }
     }
   }
-  /*
-    Now find the lowest index I associated with each process P.
-  */
+
   for (p = 0; p < num_procs; p++) {
     for (i = 1; i <= N; i++) {
       if (proc[i] == p) {
@@ -296,18 +285,14 @@ void make_domains(int num_procs) {
       }
     }
     i_min[p] = i;
-    /*
-      Find the largest index associated with each process P.
-    */
+
     for (i = N; 1 <= i; i--) {
       if (proc[i] == p) {
         break;
       }
     }
     i_max[p] = i;
-    /*
-      Find the processes to left and right.
-    */
+
     left_proc[p] = -1;
     right_proc[p] = -1;
 
@@ -324,14 +309,13 @@ void make_domains(int num_procs) {
   return;
 }
 
+// tạo nguồn f cho pt Poisson - 1 hàm Gaussian 
 double *make_source() {
-  double *f;
+  double *f = (double *)malloc((N + 2) * (N + 2) * sizeof(double));
   int i;
   int j;
   int k;
   double q = 10.0;
-
-  f = (double *)malloc((N + 2) * (N + 2) * sizeof(double));
 
   for (i = 0; i < (N + 2) * (N + 2); i++) {
     f[i] = 0.0;
